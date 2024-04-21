@@ -6,7 +6,7 @@ boto3的权限获取，如果不是根据当前环境中通过awscli已经配置
 
 ### 在aws控制台创建一个IAM角色
 
-这个角色用来给之前创建的用户扮演，这个扮演的过程是在python的脚本里通过boto3支持的STS服务来完成，具体过程在代码里有注视，这里只说明创建的角色应该被赋予的基本权限。过程如下：
+这个角色用来给之前创建的用户扮演，这个扮演的过程是在python的脚本里通过boto3支持的STS服务来完成，具体过程在代码里有注释，这里只说明创建的角色应该被赋予的基本权限。过程如下：
 
 1. 在IAM控制台找到Roles菜单，点击右上角的‘Create role'
 
@@ -47,7 +47,7 @@ boto3的权限获取，如果不是根据当前环境中通过awscli已经配置
 同时，为该用户创建一个AKSK，并妥善保存：
 ![Image7](screenshots/Screenshot%202024-04-19%20at%2009.46.33.png)
 
-### 配置Python代码: 文本推理
+### 配置Python代码text_inference_claude3.py: 文本推理
 
 ```
 #!/usr/bin/python3
@@ -150,7 +150,7 @@ if __name__ == '__main__':
 ![Image8](screenshots/Screenshot%202024-04-19%20at%2010.08.33.png)
 直接使用环境里的aws configure的profile的执行过程如下：
 ![Image9](screenshots/Screenshot%202024-04-19%20at%2010.10.18.png)
-### 配置Python代码: 图片多模态推理
+### 配置Python代码pics_inference_claude3.py: 图片多模态推理
 
 ```
 #!/usr/bin/python3
