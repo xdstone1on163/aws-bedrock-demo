@@ -13,7 +13,7 @@ boto3的权限获取，如果不是根据当前环境中通过awscli已经配置
 ![Image1](screenshots/Screenshot%202024-04-19%20at%2009.50.21.png)
 1. 设定这个role的扮演者是本账号的用户
 
-[Image: screenshots/Screenshot 2024-04-19 at 09.50.35.png]
+![Image2](screenshots/Screenshot%202024-04-19%20at%2009.50.35.png)
 1. 给这个角色设定权限，这里是给了Bedrock的full access
 
 [Image: screenshots/Screenshot 2024-04-19 at 10.23.17.png]
