@@ -10,7 +10,7 @@ boto3的权限获取，如果不是根据当前环境中通过awscli已经配置
 
 1. 在IAM控制台找到Roles菜单，点击右上角的‘Create role'
 
-![Image1](screenshots/Screenshot 2024-04-19 at 09.50.21.png)
+![Image1](screenshots/Screenshot20%2024-04-1920%at20%09.50.21.png)
 1. 设定这个role的扮演者是本账号的用户
 
 [Image: screenshots/Screenshot 2024-04-19 at 09.50.35.png]
