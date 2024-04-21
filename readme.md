@@ -10,13 +10,14 @@ boto3的权限获取，如果不是根据当前环境中通过awscli已经配置
 
 1. 在IAM控制台找到Roles菜单，点击右上角的‘Create role'
 
-[Image: Screenshot 2024-04-19 at 09.50.21.png]
+[Image: screenshots/Screenshot 2024-04-19 at 09.50.21.png]
 1. 设定这个role的扮演者是本账号的用户
 
-[Image: Screenshot 2024-04-19 at 09.50.35.png]
+[Image: screenshots/Screenshot 2024-04-19 at 09.50.35.png]
 1. 给这个角色设定权限，这里是给了Bedrock的full access
 
-[Image: Screenshot 2024-04-19 at 10.23.17.png]从最佳实践的角度出发，如果只需要角色可以调用模型，请创建如下最小权限的Policy并赋予角色：
+[Image: screenshots/Screenshot 2024-04-19 at 10.23.17.png]
+从最佳实践的角度出发，如果只需要角色可以调用模型，请创建如下最小权限的Policy并赋予角色：
 
 ```
 {
@@ -35,15 +36,16 @@ boto3的权限获取，如果不是根据当前环境中通过awscli已经配置
 
 1. 保证该角色的信任对象是本账户的用户：
 
-[Image: Screenshot 2024-04-19 at 09.51.56.png]
+[Image: screenshots/Screenshot 2024-04-19 at 09.51.56.png]
 1. 然后就可以给角色起名字，并完成创建。创建之后角色会有一个ARN，会在代码的部分需要：
 
-[Image: Screenshot 2024-04-19 at 09.57.35.png]
+[Image: screenshots/Screenshot 2024-04-19 at 09.57.35.png]
 ### 在aws控制台创建一个IAM用户
 
 具体如下图，需要用户具备一个基本的能力：扮演上面那个特定的角色，对应的policy设置如下：
-[Image: Screenshot 2024-04-19 at 10.30.35.png]同时，为该用户创建一个AKSK，并妥善保存：
-[Image: Screenshot 2024-04-19 at 09.46.33.png]
+[Image: screenshots/Screenshot 2024-04-19 at 10.30.35.png]
+同时，为该用户创建一个AKSK，并妥善保存：
+[Image: screenshots/Screenshot 2024-04-19 at 09.46.33.png]
 
 ### 配置Python代码: 文本推理
 
@@ -145,8 +147,9 @@ if __name__ == '__main__':
 ```
 
 启动角色扮演的执行过程如下：
-[Image: Screenshot 2024-04-19 at 10.08.33.png]直接使用环境里的aws configure的profile的执行过程如下：
-[Image: Screenshot 2024-04-19 at 10.10.18.png]
+[Image: screenshots/Screenshot 2024-04-19 at 10.08.33.png]
+直接使用环境里的aws configure的profile的执行过程如下：
+[Image: screenshots/Screenshot 2024-04-19 at 10.10.18.png]
 ### 配置Python代码: 图片多模态推理
 
 ```
