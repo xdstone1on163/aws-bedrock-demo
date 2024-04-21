@@ -36,7 +36,7 @@ boto3的权限获取，如果不是根据当前环境中通过awscli已经配置
 
 1. 保证该角色的信任对象是本账户的用户：
 
-[Image: screenshots/Screenshot%202024-04-19%20at%2009.51.56.png]
+![Image4](screenshots/Screenshot%202024-04-19%20at%2009.51.56.png)
 1. 然后就可以给角色起名字，并完成创建。创建之后角色会有一个ARN，会在代码的部分需要：
 
 [Image: screenshots/Screenshot 2024-04-19 at 09.57.35.png]
