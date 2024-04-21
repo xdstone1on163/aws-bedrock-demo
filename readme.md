@@ -16,7 +16,7 @@ boto3的权限获取，如果不是根据当前环境中通过awscli已经配置
 ![Image2](screenshots/Screenshot%202024-04-19%20at%2009.50.35.png)
 1. 给这个角色设定权限，这里是给了Bedrock的full access
 
-[Image: screenshots/Screenshot 2024-04-19 at 10.23.17.png]
+![Image3](screenshots/Screenshot%202024-04-19%20at%2010.23.17.png)
 从最佳实践的角度出发，如果只需要角色可以调用模型，请创建如下最小权限的Policy并赋予角色：
 
 ```
@@ -36,7 +36,7 @@ boto3的权限获取，如果不是根据当前环境中通过awscli已经配置
 
 1. 保证该角色的信任对象是本账户的用户：
 
-[Image: screenshots/Screenshot 2024-04-19 at 09.51.56.png]
+[Image: screenshots/Screenshot%202024-04-19%20at%2009.51.56.png]
 1. 然后就可以给角色起名字，并完成创建。创建之后角色会有一个ARN，会在代码的部分需要：
 
 [Image: screenshots/Screenshot 2024-04-19 at 09.57.35.png]
