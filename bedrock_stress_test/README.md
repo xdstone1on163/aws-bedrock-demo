@@ -7,7 +7,7 @@
 - ✅ **多模型支持**: 支持DeepSeek V3、MiniMax M2，易于扩展更多模型
 - ✅ **快速验证模式**: 快速测试模型是否正常响应
 - ✅ **性能压测模式**: 系统性测量不同上下文大小下的性能表现
-- ✅ **多梯度测试**: 支持8K/32K/64K/128K/256K/360K上下文测试
+- ✅ **多梯度测试**: 支持8K/32K/64K/128K上下文测试
 - ✅ **统计分析**: 自动计算平均值、标准差、P50/P95/P99等指标
 - ✅ **实时输出**: 终端美化输出，实时显示测试进度
 - ✅ **可配置测试次数**: 通过`--iterations`参数灵活控制测试次数
@@ -97,13 +97,9 @@ python cli.py --mode quick --model-id "custom.model-id" \
 # DeepSeek V3性能测试（默认测试8K-128K）
 python cli.py --mode performance --model deepseek --iterations 10
 
-# MiniMax M2性能测试（测试标准梯度）
+# MiniMax M2性能测试（最大支持128K）
 python cli.py --mode performance --model minimax --iterations 5 \
   --context-sizes 8K,32K,64K,128K
-
-# MiniMax M2超长上下文测试（256K-360K）
-python cli.py --mode performance --model minimax --iterations 5 \
-  --context-sizes 256K,360K
 
 # 完整参数示例
 python cli.py --mode performance --model deepseek \
@@ -232,8 +228,6 @@ bedrock_stress_test/
 - **32K context** = 10篇文档 × 3K tokens/篇
 - **64K context** = 20篇文档 × 3K tokens/篇
 - **128K context** = 40篇文档 × 3K tokens/篇
-- **256K context** = 80篇文档 × 3K tokens/篇（适用于MiniMax M2等超长上下文模型）
-- **360K context** = 112篇文档 × 3K tokens/篇（适用于MiniMax M2等超长上下文模型）
 
 ### 性能指标
 
@@ -252,7 +246,7 @@ bedrock_stress_test/
 | 模型名称 | 模型ID | 提供商 | 最大上下文 | 推荐测试梯度 |
 |---------|--------|-------|----------|------------|
 | deepseek | `deepseek.v3-v1:0` | DeepSeek | 128K tokens | 8K, 32K, 64K, 128K |
-| minimax | `minimax.minimax-m2` | MiniMax | **400K tokens** | 8K, 32K, 64K, 128K, 256K, 360K |
+| minimax | `minimax.minimax-m2` | MiniMax | **192K tokens** (196608) | 8K, 32K, 64K, 128K |
 
 ### 如何添加新模型
 
@@ -267,32 +261,24 @@ MODELS["new-model"] = ModelConfig(
 )
 ```
 
-### MiniMax M2 超长上下文测试
+### MiniMax M2 性能特点
 
-MiniMax M2支持高达400K tokens的超长上下文，可以测试更大的梯度：
+MiniMax M2在实际使用中的最大上下文限制为192K tokens（196608），与DeepSeek V3相比有更大的上下文窗口：
 
 ```bash
-# 测试标准梯度（8K-128K）
+# MiniMax M2完整测试
 python cli.py --mode performance --model minimax \
   --iterations 5 \
-  --context-sizes 8K,32K,64K,128K
-
-# 测试超长上下文梯度（256K-360K）
-python cli.py --mode performance --model minimax \
-  --iterations 5 \
-  --context-sizes 256K,360K
-
-# 完整梯度测试
-python cli.py --mode performance --model minimax \
-  --iterations 5 \
-  --context-sizes 8K,32K,64K,128K,256K,360K
+  --context-sizes 8K,32K,64K,128K \
+  --delay 2
 ```
 
-**注意事项**：
-- 360K上下文测试可能需要10-30秒的TTFT
-- 建议先用较少的iterations（如3-5次）进行测试
-- 超长上下文测试的成本会显著高于标准梯度测试
-- 建议增加`--delay`参数（如2-3秒）避免API限流
+**性能特点**：
+- **超高吞吐量**：实测可达800+ tokens/sec（远超DeepSeek V3的40-50 tps）
+- **较长TTFT**：首token延迟约1.5-2秒（略高于DeepSeek）
+- **更大上下文**：192K比DeepSeek的128K更大，适合长文档处理
+
+**注意**：虽然某些文档声称支持400K，但实际API限制为196608 tokens，超出会返回400错误。
 
 ## 常见问题
 

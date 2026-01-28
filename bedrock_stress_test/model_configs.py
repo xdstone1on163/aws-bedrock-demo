@@ -23,7 +23,7 @@ MODELS = {
         model_id="minimax.minimax-m2",
         display_name="MiniMax M2",
         provider="MiniMax",
-        max_context=400000  # MiniMax M2支持400K上下文
+        max_context=196608  # MiniMax M2实际支持192K上下文（196608 tokens）
     )
 }
 
