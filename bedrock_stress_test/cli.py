@@ -13,36 +13,56 @@ AWS Bedrock 大模型性能测试工具 - 命令行入口
 """
 import argparse
 import sys
-from typing import List
 
 from bedrock_client import BedrockClient
 from performance_tester import PerformanceTester
 from output_formatter import OutputFormatter
 from model_configs import get_model_config, MODELS, get_valid_context_sizes, ALL_CONTEXT_SIZES
 
+# 输入校验上限
+MAX_SYSTEM_PROMPT_LEN = 10000
+MAX_USER_PROMPT_LEN = 2000000
+MAX_TOKENS_UPPER_LIMIT = 8192
+
+
+def resolve_model_config(args):
+    """
+    解析模型配置，返回 (model_id, model_display_name, model_config)
+    model_config 在使用自定义 model_id 时为 None
+    """
+    if args.model_id:
+        return args.model_id, args.model_id, None
+    elif args.model:
+        config = get_model_config(args.model)
+        return config.model_id, config.display_name, config
+    else:
+        config = get_model_config("deepseek-v3.1")
+        return config.model_id, config.display_name, config
+
+
+def validate_inputs(args):
+    """校验输入参数长度和范围"""
+    if args.max_tokens > MAX_TOKENS_UPPER_LIMIT:
+        print(f"[警告] max_tokens ({args.max_tokens}) 超过上限 {MAX_TOKENS_UPPER_LIMIT}，已自动调整")
+        args.max_tokens = MAX_TOKENS_UPPER_LIMIT
+
+    if hasattr(args, 'system') and args.system and len(args.system) > MAX_SYSTEM_PROMPT_LEN:
+        print(f"[错误] system prompt 长度 ({len(args.system)}) 超过上限 {MAX_SYSTEM_PROMPT_LEN}")
+        sys.exit(1)
+
+    if hasattr(args, 'user') and args.user and len(args.user) > MAX_USER_PROMPT_LEN:
+        print(f"[错误] user prompt 长度 ({len(args.user)}) 超过上限 {MAX_USER_PROMPT_LEN}")
+        sys.exit(1)
+
 
 def quick_mode(args):
     """快速验证模式"""
     formatter = OutputFormatter()
+    validate_inputs(args)
 
-    # 解析模型配置
-    model_config = None
-    if args.model_id:
-        # 用户提供了自定义model_id，使用它
-        model_id = args.model_id
-        model_display_name = args.model_id
-    elif args.model:
-        # 用户选择了预定义模型
-        model_config = get_model_config(args.model)
-        model_id = model_config.model_id
-        model_display_name = model_config.display_name
-    else:
-        # 默认使用DeepSeek
-        model_config = get_model_config("deepseek-v3.1")
-        model_id = model_config.model_id
-        model_display_name = model_config.display_name
+    model_id, model_display_name, model_config = resolve_model_config(args)
 
-    formatter.print_welcome(model_display_name)
+    formatter.print_welcome(model_display_name, region=args.region)
 
     # 获取system prompt和user prompt
     if args.system and args.user:
@@ -94,25 +114,11 @@ def quick_mode(args):
 def performance_mode(args):
     """性能测试模式"""
     formatter = OutputFormatter()
+    validate_inputs(args)
 
-    # 解析模型配置
-    model_config = None
-    if args.model_id:
-        # 用户提供了自定义model_id，使用它
-        model_id = args.model_id
-        model_display_name = args.model_id
-    elif args.model:
-        # 用户选择了预定义模型
-        model_config = get_model_config(args.model)
-        model_id = model_config.model_id
-        model_display_name = model_config.display_name
-    else:
-        # 默认使用DeepSeek
-        model_config = get_model_config("deepseek-v3.1")
-        model_id = model_config.model_id
-        model_display_name = model_config.display_name
+    model_id, model_display_name, model_config = resolve_model_config(args)
 
-    formatter.print_welcome(model_display_name)
+    formatter.print_welcome(model_display_name, region=args.region)
 
     # 创建客户端
     client = BedrockClient(region=args.region, model_id=model_id)
@@ -333,6 +339,12 @@ def main():
         help="跳过确认提示，直接开始测试"
     )
 
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="显示完整错误堆栈信息（调试用）"
+    )
+
     args = parser.parse_args()
 
     # 根据模式执行
@@ -346,8 +358,9 @@ def main():
         sys.exit(130)
     except Exception as e:
         print(f"\n\n[错误] {str(e)}")
-        import traceback
-        traceback.print_exc()
+        if args.debug:
+            import traceback
+            traceback.print_exc()
         sys.exit(1)
 
 

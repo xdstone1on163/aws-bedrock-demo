@@ -45,16 +45,21 @@ class PerformanceTester:
         Returns:
             PerformanceMetrics对象
         """
+        call_start = time.perf_counter()
+
         metrics = self.client.invoke_with_timing(
             system_prompt=self.system_prompt,
             user_prompt=user_prompt,
             max_tokens=max_tokens,
-            verbose=verbose
+            verbose=verbose,
+            retain_response=False
         )
 
-        # 添加延迟避免限流
-        if delay_sec > 0:
-            time.sleep(delay_sec)
+        # 自适应延迟：扣除 API 调用已消耗的时间
+        call_duration = time.perf_counter() - call_start
+        remaining_delay = delay_sec - call_duration
+        if remaining_delay > 0:
+            time.sleep(remaining_delay)
 
         return metrics
 

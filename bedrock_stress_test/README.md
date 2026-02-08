@@ -117,6 +117,7 @@ python cli.py --mode performance --model deepseek-v3.1 \
 - `--delay N`: 每次测试后延迟秒数，避免限流（默认1秒）
 - `--verbose`: 显示每次测试的详细日志
 - `-y, --yes`: 跳过确认提示，直接开始测试
+- `--debug`: 显示完整错误堆栈信息（调试用）
 
 **输出示例**:
 ```
@@ -203,19 +204,28 @@ python cli.py --help
 | `--delay` | 每次测试后延迟秒数 | `1` |
 | `--verbose` | 显示详细日志 | `False` |
 | `-y, --yes` | 跳过确认提示 | `False` |
+| `--debug` | 显示完整错误堆栈信息 | `False` |
 
 ## 项目结构
 
 ```
 bedrock_stress_test/
-├── requirements.txt           # 依赖项
-├── models.py                 # 数据类定义
-├── bedrock_client.py         # Bedrock API封装
-├── context_builder.py        # 上下文生成器
-├── performance_tester.py     # 测试逻辑
-├── output_formatter.py       # 输出格式化
 ├── cli.py                    # 命令行入口（主程序）
-└── README.md                 # 使用文档
+├── bedrock_client.py         # Bedrock API封装（应用层重试 + TTFT精确测量）
+├── performance_tester.py     # 测试逻辑（自适应延迟）
+├── context_builder.py        # 上下文生成器（RAG风格）
+├── output_formatter.py       # Rich美化输出
+├── models.py                 # 数据类定义
+├── model_configs.py          # 模型配置（ID、上下文限制等）
+├── requirements.txt          # 依赖项（含版本上下限）
+├── requirements.lock         # 精确版本锁定
+├── pyproject.toml            # pytest配置
+├── tests/                    # 单元测试
+│   ├── test_models.py
+│   ├── test_model_configs.py
+│   ├── test_context_builder.py
+│   └── test_performance_tester.py
+└── README.md
 ```
 
 ## 测试策略
@@ -354,13 +364,16 @@ python cli.py --mode performance --iterations 10 > results.txt 2>&1
 
 ### TTFT精确测量
 
-使用`converse_stream` API监听事件流，捕获第一个`contentBlockDelta`事件的时间戳：
+使用`converse_stream` API监听事件流，捕获第一个`contentBlockDelta`事件的时间戳。SDK级重试已禁用（`max_attempts=1`），改为应用层重试（最多3次，指数退避），每次重试前重置计时器，确保TTFT测量不被重试延迟污染：
 
 ```python
-for event in response['stream']:
-    if 'contentBlockDelta' in event and not first_token_received:
-        ttft = (time.perf_counter() - t_start) * 1000
-        first_token_received = True
+for attempt in range(APP_RETRY_MAX_ATTEMPTS):
+    t_start = time.perf_counter()  # 每次重试都重新计时
+    response = client.converse_stream(...)
+    for event in response['stream']:
+        if 'contentBlockDelta' in event and not first_token_received:
+            ttft = (time.perf_counter() - t_start) * 1000
+            first_token_received = True
 ```
 
 ### 吞吐量计算
@@ -375,6 +388,13 @@ tokens_per_sec = output_tokens / (generation_time_ms / 1000)
 ### Token估算
 
 使用粗略估算（1 token ≈ 4 chars），实际token数从API响应的`usage`字段获取。
+
+### 运行测试
+
+```bash
+pip install -r requirements.txt
+python -m pytest tests/ -v
+```
 
 ## 许可证
 

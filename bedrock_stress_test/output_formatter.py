@@ -5,7 +5,6 @@
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
-from rich.text import Text
 
 from models import Statistics, PerformanceMetrics
 from model_configs import ModelConfig
@@ -17,13 +16,13 @@ class OutputFormatter:
     def __init__(self):
         self.console = Console()
 
-    def print_welcome(self, model_name: str = "DeepSeek V3"):
+    def print_welcome(self, model_name: str = "DeepSeek V3", region: str = "us-east-2"):
         """打印欢迎信息"""
         welcome_text = f"""
         AWS Bedrock 大模型性能测试工具
 
         测试模型: {model_name}
-        测试区域: us-east-2
+        测试区域: {region}
         """
         panel = Panel(welcome_text.strip(), title="欢迎", border_style="cyan")
         self.console.print(panel)
@@ -167,10 +166,6 @@ class OutputFormatter:
     def print_error(self, message: str):
         """打印错误信息"""
         self.console.print(f"\n[bold red]❌ 错误:[/bold red] {message}\n")
-
-    def print_info(self, message: str):
-        """打印提示信息"""
-        self.console.print(f"[bold blue]ℹ️  {message}[/bold blue]")
 
     def print_model_info(self, config: ModelConfig):
         """打印模型元信息"""

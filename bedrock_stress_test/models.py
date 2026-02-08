@@ -17,7 +17,6 @@ class PerformanceMetrics:
     avg_ms_per_token: float     # 平均每token耗时
     response_text: str          # 完整响应文本
     http_status_code: int       # HTTP响应状态码
-    request_id: Optional[str] = None  # AWS请求ID（用于追踪）
     error_message: Optional[str] = None  # 错误信息（如果有）
 
 

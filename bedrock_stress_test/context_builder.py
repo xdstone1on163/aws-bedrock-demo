@@ -2,7 +2,6 @@
 上下文生成器
 模拟RAG场景，生成不同大小的测试上下文
 """
-from typing import Dict
 import random
 
 
@@ -51,45 +50,48 @@ class ContextBuilder:
         topic = random.choice(ContextBuilder.TOPICS)
         content_parts = []
 
-        content_parts.append(f"# 文档 {doc_id}: {topic}\n\n")
+        header = f"# 文档 {doc_id}: {topic}\n\n"
+        content_parts.append(header)
+        total_chars = len(header)
 
-        # 生成段落，直到达到目标token数
-        current_text = "\n".join(content_parts)
         paragraph_count = 0
 
-        while ContextBuilder.estimate_tokens(current_text) < target_tokens:
+        while total_chars // 4 < target_tokens:
             paragraph_count += 1
 
-            # 生成段落标题
-            content_parts.append(f"## 第 {paragraph_count} 节\n\n")
+            section_header = f"## 第 {paragraph_count} 节\n\n"
+            content_parts.append(section_header)
+            total_chars += len(section_header)
 
-            # 生成段落内容
             sentences = random.randint(3, 6)
             for _ in range(sentences):
-                # 生成句子
                 sentence_words = random.sample(ContextBuilder.TECH_TERMS, k=random.randint(5, 10))
-                sentence = f"本节讨论 {' 和 '.join(sentence_words[:3])} 的相关概念。"
-                content_parts.append(sentence + " ")
+                sentence = f"本节讨论 {' 和 '.join(sentence_words[:3])} 的相关概念。 "
+                content_parts.append(sentence)
+                total_chars += len(sentence)
 
-                # 添加一些技术细节
                 detail_words = random.sample(ContextBuilder.TECH_TERMS, k=random.randint(8, 15))
-                detail = f"在实践中，{', '.join(detail_words)} 等技术点需要重点关注。"
-                content_parts.append(detail + " ")
+                detail = f"在实践中，{', '.join(detail_words)} 等技术点需要重点关注。 "
+                content_parts.append(detail)
+                total_chars += len(detail)
 
-            content_parts.append("\n\n")
+            newlines = "\n\n"
+            content_parts.append(newlines)
+            total_chars += len(newlines)
 
-            # 添加代码示例（增加token密度）
             if paragraph_count % 3 == 0:
-                content_parts.append("```python\n")
-                content_parts.append("# 示例代码\n")
-                content_parts.append("def example_function():\n")
-                content_parts.append("    result = process_data(input_data)\n")
-                content_parts.append("    return result\n")
-                content_parts.append("```\n\n")
+                code_block = (
+                    "```python\n"
+                    "# 示例代码\n"
+                    "def example_function():\n"
+                    "    result = process_data(input_data)\n"
+                    "    return result\n"
+                    "```\n\n"
+                )
+                content_parts.append(code_block)
+                total_chars += len(code_block)
 
-            current_text = "".join(content_parts)
-
-        return current_text
+        return "".join(content_parts)
 
     @staticmethod
     def build_rag_context(num_docs: int, tokens_per_doc: int) -> str:
@@ -115,45 +117,6 @@ class ContextBuilder:
         context_parts.append("请根据以上检索到的文档内容，总结关键技术要点。")
 
         return "".join(context_parts)
-
-    @staticmethod
-    def get_test_contexts() -> Dict[str, str]:
-        """
-        生成所有测试上下文梯度
-
-        Returns:
-            字典 {context_size: context_string}
-        """
-        contexts = {}
-
-        # 8K context = 4篇文档 × 2K tokens/篇
-        contexts["8K"] = ContextBuilder.build_rag_context(num_docs=4, tokens_per_doc=2000)
-
-        # 32K context = 10篇文档 × 3K tokens/篇
-        contexts["32K"] = ContextBuilder.build_rag_context(num_docs=10, tokens_per_doc=3200)
-
-        # 64K context = 20篇文档 × 3K tokens/篇
-        contexts["64K"] = ContextBuilder.build_rag_context(num_docs=20, tokens_per_doc=3200)
-
-        # 128K context = 40篇文档 × 3K tokens/篇
-        contexts["128K"] = ContextBuilder.build_rag_context(num_docs=40, tokens_per_doc=3200)
-
-        # 164K context = 51篇文档 × 3.2K tokens/篇（适用于DeepSeek V3.2接近上限测试）
-        contexts["164K"] = ContextBuilder.build_rag_context(num_docs=51, tokens_per_doc=3200)
-
-        # 196K context = 61篇文档 × 3.2K tokens/篇（适用于MiniMax等模型接近上限测试）
-        contexts["196K"] = ContextBuilder.build_rag_context(num_docs=61, tokens_per_doc=3200)
-
-        # 200K context = 63篇文档 × 3.2K tokens/篇（适用于GLM 4.7等模型接近上限测试）
-        contexts["200K"] = ContextBuilder.build_rag_context(num_docs=63, tokens_per_doc=3200)
-
-        # 256K context = 80篇文档 × 3K tokens/篇（适用于MiniMax M2等超长上下文模型）
-        contexts["256K"] = ContextBuilder.build_rag_context(num_docs=80, tokens_per_doc=3200)
-
-        # 360K context = 112篇文档 × 3K tokens/篇（适用于MiniMax M2等超长上下文模型）
-        contexts["360K"] = ContextBuilder.build_rag_context(num_docs=112, tokens_per_doc=3200)
-
-        return contexts
 
     @staticmethod
     def get_specific_context(size: str) -> str:
