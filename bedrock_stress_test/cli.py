@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AWS Bedrock DeepSeek V3 性能测试工具 - 命令行入口
+AWS Bedrock 大模型性能测试工具 - 命令行入口
 
 用法:
     快速验证模式:
@@ -18,7 +18,7 @@ from typing import List
 from bedrock_client import BedrockClient
 from performance_tester import PerformanceTester
 from output_formatter import OutputFormatter
-from model_configs import get_model_config, MODELS
+from model_configs import get_model_config, MODELS, get_valid_context_sizes, ALL_CONTEXT_SIZES
 
 
 def quick_mode(args):
@@ -26,20 +26,21 @@ def quick_mode(args):
     formatter = OutputFormatter()
 
     # 解析模型配置
+    model_config = None
     if args.model_id:
         # 用户提供了自定义model_id，使用它
         model_id = args.model_id
         model_display_name = args.model_id
     elif args.model:
         # 用户选择了预定义模型
-        config = get_model_config(args.model)
-        model_id = config.model_id
-        model_display_name = config.display_name
+        model_config = get_model_config(args.model)
+        model_id = model_config.model_id
+        model_display_name = model_config.display_name
     else:
         # 默认使用DeepSeek
-        config = get_model_config("deepseek")
-        model_id = config.model_id
-        model_display_name = config.display_name
+        model_config = get_model_config("deepseek-v3.1")
+        model_id = model_config.model_id
+        model_display_name = model_config.display_name
 
     formatter.print_welcome(model_display_name)
 
@@ -82,6 +83,10 @@ def quick_mode(args):
     # 显示结果
     formatter.print_quick_result(metrics)
 
+    # 显示模型元信息
+    if model_config:
+        formatter.print_model_info(model_config)
+
     if metrics.error_message:
         sys.exit(1)
 
@@ -91,20 +96,21 @@ def performance_mode(args):
     formatter = OutputFormatter()
 
     # 解析模型配置
+    model_config = None
     if args.model_id:
         # 用户提供了自定义model_id，使用它
         model_id = args.model_id
         model_display_name = args.model_id
     elif args.model:
         # 用户选择了预定义模型
-        config = get_model_config(args.model)
-        model_id = config.model_id
-        model_display_name = config.display_name
+        model_config = get_model_config(args.model)
+        model_id = model_config.model_id
+        model_display_name = model_config.display_name
     else:
         # 默认使用DeepSeek
-        config = get_model_config("deepseek")
-        model_id = config.model_id
-        model_display_name = config.display_name
+        model_config = get_model_config("deepseek-v3.1")
+        model_id = model_config.model_id
+        model_display_name = model_config.display_name
 
     formatter.print_welcome(model_display_name)
 
@@ -119,17 +125,33 @@ def performance_mode(args):
 
     formatter.print_success(message)
 
+    # 确定模型支持的上下文大小
+    all_size_labels = [s for s, _ in ALL_CONTEXT_SIZES]
+    if args.model_id:
+        # 自定义 model_id 无法验证上下文限制，允许所有大小
+        valid_sizes = all_size_labels
+    else:
+        model_name = args.model if args.model else "deepseek-v3.1"
+        valid_sizes = get_valid_context_sizes(model_name)
+
     # 解析要测试的上下文大小
     if args.context_sizes:
         context_sizes = [s.strip() for s in args.context_sizes.split(',')]
     else:
-        context_sizes = ["8K", "32K", "64K", "128K"]
+        # 默认使用 128K 及以下的有效大小
+        context_sizes = [s for s in valid_sizes if s in ["8K", "32K", "64K", "128K"]]
 
     # 验证上下文大小
-    valid_sizes = ["8K", "32K", "64K", "128K", "256K", "360K"]
     for size in context_sizes:
+        if size not in all_size_labels:
+            formatter.print_error(f"无效的上下文大小: {size}. 支持的大小: {', '.join(all_size_labels)}")
+            sys.exit(1)
         if size not in valid_sizes:
-            formatter.print_error(f"无效的上下文大小: {size}. 支持的大小: {', '.join(valid_sizes)}")
+            model_label = args.model if args.model else "deepseek-v3.1"
+            formatter.print_error(
+                f"模型 {model_label} 不支持 {size} 上下文. "
+                f"该模型支持的大小: {', '.join(valid_sizes)}"
+            )
             sys.exit(1)
 
     # 成本估算提示
@@ -187,22 +209,27 @@ def performance_mode(args):
     if len(all_results) > 1:
         formatter.print_comparison_table(all_results)
 
+    # 显示模型元信息
+    if model_config:
+        formatter.print_model_info(model_config)
+
     formatter.print_success("所有测试完成!")
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="AWS Bedrock DeepSeek V3 性能测试工具",
+        description="AWS Bedrock 大模型性能测试工具",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:
   快速验证:
-    %(prog)s --mode quick --model deepseek --system "你是助手" --user "你好"
-    %(prog)s --mode quick --model minimax --system "你是助手" --user "你好"
+    %(prog)s --mode quick --model deepseek-v3.1 --system "你是助手" --user "你好"
+    %(prog)s --mode quick --model kimi2.5 --system "你是助手" --user "你好"
 
   性能测试:
-    %(prog)s --mode performance --model deepseek --iterations 10
-    %(prog)s --mode performance --model minimax --iterations 5 --context-sizes 8K,32K
+    %(prog)s --mode performance --model deepseek-v3.1 --iterations 10
+    %(prog)s --mode performance --model glm4.7 --iterations 5 --context-sizes 8K,32K,64K
+    %(prog)s --mode performance --model kimi2.5 --iterations 5 --context-sizes 8K,32K,64K,128K,256K
 
   自定义模型ID:
     %(prog)s --mode quick --model-id "custom.model-id" --user "测试"

@@ -13,19 +13,49 @@ class ModelConfig:
 
 # 支持的模型
 MODELS = {
-    "deepseek": ModelConfig(
+    "deepseek-v3.1": ModelConfig(
         model_id="deepseek.v3-v1:0",
-        display_name="DeepSeek V3",
+        display_name="DeepSeek V3.1",
         provider="DeepSeek",
         max_context=128000
     ),
-    "minimax": ModelConfig(
+    "minimax2.0": ModelConfig(
         model_id="minimax.minimax-m2",
-        display_name="MiniMax M2",
+        display_name="MiniMax 2.0",
         provider="MiniMax",
         max_context=196608  # MiniMax M2实际支持192K上下文（196608 tokens）
-    )
+    ),
+    "deepseek-v3.2": ModelConfig(
+        model_id="deepseek.v3.2",
+        display_name="DeepSeek V3.2",
+        provider="DeepSeek",
+        max_context=164000
+    ),
+    "glm4.7": ModelConfig(
+        model_id="zai.glm-4.7",
+        display_name="GLM 4.7",
+        provider="智谱AI",
+        max_context=203000
+    ),
+    "minimax2.1": ModelConfig(
+        model_id="minimax.minimax-m2.1",
+        display_name="MiniMax 2.1",
+        provider="MiniMax",
+        max_context=196608
+    ),
+    "kimi2.5": ModelConfig(
+        model_id="moonshotai.kimi-k2.5",
+        display_name="Kimi 2.5",
+        provider="Moonshot",
+        max_context=256000
+    ),
 }
+
+
+ALL_CONTEXT_SIZES = [
+    ("8K", 8000), ("32K", 32000), ("64K", 64000),
+    ("128K", 128000), ("256K", 256000), ("360K", 360000),
+]
 
 
 def get_model_config(model_name: str) -> ModelConfig:
@@ -33,7 +63,7 @@ def get_model_config(model_name: str) -> ModelConfig:
     获取模型配置
 
     Args:
-        model_name: 模型名称（如deepseek, minimax）
+        model_name: 模型名称（如deepseek-v3.1, minimax2.0）
 
     Returns:
         ModelConfig对象
@@ -47,3 +77,9 @@ def get_model_config(model_name: str) -> ModelConfig:
             f"支持的模型: {', '.join(MODELS.keys())}"
         )
     return MODELS[model_name.lower()]
+
+
+def get_valid_context_sizes(model_name: str) -> list[str]:
+    """获取模型支持的上下文大小列表"""
+    config = get_model_config(model_name)
+    return [size for size, tokens in ALL_CONTEXT_SIZES if tokens <= config.max_context]

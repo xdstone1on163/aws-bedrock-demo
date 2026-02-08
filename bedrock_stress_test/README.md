@@ -1,10 +1,10 @@
 # AWS Bedrock 大模型性能测试工具
 
-一个为AWS Bedrock上的大语言模型设计的性能测试工具，支持**DeepSeek V3**、**MiniMax M2**等模型，重点测量大上下文场景下的**TTFT（Time To First Token）**和**输出token吞吐量**。
+一个为AWS Bedrock上的大语言模型设计的性能测试工具，支持**DeepSeek V3.1/V3.2**、**MiniMax 2.0/2.1**、**GLM 4.7**、**Kimi 2.5**等模型，重点测量大上下文场景下的**TTFT（Time To First Token）**和**输出token吞吐量**。
 
 ## 功能特性
 
-- ✅ **多模型支持**: 支持DeepSeek V3、MiniMax M2，易于扩展更多模型
+- ✅ **多模型支持**: 支持DeepSeek V3.1/V3.2、MiniMax 2.0/2.1、GLM 4.7、Kimi 2.5，易于扩展
 - ✅ **快速验证模式**: 快速测试模型是否正常响应
 - ✅ **性能压测模式**: 系统性测量不同上下文大小下的性能表现
 - ✅ **多梯度测试**: 支持8K/32K/64K/128K上下文测试
@@ -56,13 +56,13 @@ aws bedrock list-foundation-models --region us-east-2 | grep deepseek
 用于快速测试模型是否正常响应：
 
 ```bash
-# DeepSeek V3测试
-python cli.py --mode quick --model deepseek \
+# DeepSeek V3.1测试
+python cli.py --mode quick --model deepseek-v3.1 \
   --system "你是一个helpful助手" \
   --user "你好，请介绍一下自己"
 
-# MiniMax M2测试
-python cli.py --mode quick --model minimax \
+# MiniMax 2.0测试
+python cli.py --mode quick --model minimax2.0 \
   --system "你是一个helpful助手" \
   --user "你好，请介绍一下自己"
 
@@ -94,15 +94,15 @@ python cli.py --mode quick --model-id "custom.model-id" \
 用于系统性测量不同上下文大小下的性能表现：
 
 ```bash
-# DeepSeek V3性能测试（默认测试8K-128K）
-python cli.py --mode performance --model deepseek --iterations 10
+# DeepSeek V3.1性能测试（默认测试8K-128K）
+python cli.py --mode performance --model deepseek-v3.1 --iterations 10
 
-# MiniMax M2性能测试（最大支持128K）
-python cli.py --mode performance --model minimax --iterations 5 \
+# MiniMax 2.0性能测试（最大支持128K）
+python cli.py --mode performance --model minimax2.0 --iterations 5 \
   --context-sizes 8K,32K,64K,128K
 
 # 完整参数示例
-python cli.py --mode performance --model deepseek \
+python cli.py --mode performance --model deepseek-v3.1 \
   --iterations 20 \
   --context-sizes 8K,32K,64K,128K \
   --warmup 2 \
@@ -181,7 +181,7 @@ python cli.py --help
 |------|------|--------|
 | `--mode` | 运行模式: `quick` 或 `performance` | **必需** |
 | `--region` | AWS区域 | `us-east-2` |
-| `--model` | 选择模型: `deepseek` 或 `minimax` | `deepseek` |
+| `--model` | 选择模型: `deepseek-v3.1`, `minimax2.0`, `deepseek-v3.2`, `glm4.7`, `minimax2.1`, `kimi2.5` | `deepseek-v3.1` |
 | `--model-id` | 自定义模型ID（高级选项，覆盖--model） | 无 |
 | `--max-tokens` | 最大输出token数 | `2048` |
 
@@ -245,8 +245,12 @@ bedrock_stress_test/
 
 | 模型名称 | 模型ID | 提供商 | 最大上下文 | 推荐测试梯度 |
 |---------|--------|-------|----------|------------|
-| deepseek | `deepseek.v3-v1:0` | DeepSeek | 128K tokens | 8K, 32K, 64K, 128K |
-| minimax | `minimax.minimax-m2` | MiniMax | **192K tokens** (196608) | 8K, 32K, 64K, 128K |
+| deepseek-v3.1 | `deepseek.v3-v1:0` | DeepSeek | 128K tokens | 8K, 32K, 64K, 128K |
+| minimax2.0 | `minimax.minimax-m2` | MiniMax | **192K tokens** (196608) | 8K, 32K, 64K, 128K |
+| deepseek-v3.2 | `deepseek.v3.2` | DeepSeek | 164K tokens | 8K, 32K, 64K, 128K |
+| glm4.7 | `zai.glm-4.7` | 智谱AI | 203K tokens | 8K, 32K, 64K, 128K |
+| minimax2.1 | `minimax.minimax-m2.1` | MiniMax | **192K tokens** (196608) | 8K, 32K, 64K, 128K |
+| kimi2.5 | `moonshotai.kimi-k2.5` | Moonshot | 256K tokens | 8K, 32K, 64K, 128K, 256K |
 
 ### 如何添加新模型
 
@@ -261,13 +265,13 @@ MODELS["new-model"] = ModelConfig(
 )
 ```
 
-### MiniMax M2 性能特点
+### MiniMax 2.0 性能特点
 
-MiniMax M2在实际使用中的最大上下文限制为192K tokens（196608），与DeepSeek V3相比有更大的上下文窗口：
+MiniMax 2.0在实际使用中的最大上下文限制为192K tokens（196608），与DeepSeek V3.1相比有更大的上下文窗口：
 
 ```bash
-# MiniMax M2完整测试
-python cli.py --mode performance --model minimax \
+# MiniMax 2.0完整测试
+python cli.py --mode performance --model minimax2.0 \
   --iterations 5 \
   --context-sizes 8K,32K,64K,128K \
   --delay 2

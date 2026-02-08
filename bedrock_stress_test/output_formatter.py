@@ -8,6 +8,7 @@ from rich.panel import Panel
 from rich.text import Text
 
 from models import Statistics, PerformanceMetrics
+from model_configs import ModelConfig
 
 
 class OutputFormatter:
@@ -170,6 +171,20 @@ class OutputFormatter:
     def print_info(self, message: str):
         """打印提示信息"""
         self.console.print(f"[bold blue]ℹ️  {message}[/bold blue]")
+
+    def print_model_info(self, config: ModelConfig):
+        """打印模型元信息"""
+        table = Table(title="模型信息", show_header=True, header_style="bold magenta")
+        table.add_column("项目", style="cyan", width=20)
+        table.add_column("数值", style="green", width=40)
+
+        table.add_row("模型名称", config.display_name)
+        table.add_row("模型ID", config.model_id)
+        table.add_row("提供商", config.provider)
+        table.add_row("最大上下文", f"{config.max_context:,} tokens ({config.max_context // 1000}K)")
+
+        self.console.print(table)
+        print()
 
     def print_success(self, message: str):
         """打印成功信息"""
