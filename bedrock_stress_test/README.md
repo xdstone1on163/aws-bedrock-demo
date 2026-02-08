@@ -7,7 +7,7 @@
 - ✅ **多模型支持**: 支持DeepSeek V3.1/V3.2、MiniMax 2.0/2.1、GLM 4.7、Kimi 2.5，易于扩展
 - ✅ **快速验证模式**: 快速测试模型是否正常响应
 - ✅ **性能压测模式**: 系统性测量不同上下文大小下的性能表现
-- ✅ **多梯度测试**: 支持8K/32K/64K/128K/196K/200K/256K/360K上下文测试
+- ✅ **多梯度测试**: 支持8K/32K/64K/128K/164K/196K/200K/256K/360K上下文测试
 - ✅ **统计分析**: 自动计算平均值、标准差、P50/P95/P99等指标
 - ✅ **实时输出**: 终端美化输出，实时显示测试进度
 - ✅ **可配置测试次数**: 通过`--iterations`参数灵活控制测试次数
@@ -228,6 +228,7 @@ bedrock_stress_test/
 - **32K context** = 10篇文档 × 3.2K tokens/篇
 - **64K context** = 20篇文档 × 3.2K tokens/篇
 - **128K context** = 40篇文档 × 3.2K tokens/篇
+- **164K context** = 51篇文档 × 3.2K tokens/篇（DeepSeek V3.2接近上限测试）
 - **196K context** = 61篇文档 × 3.2K tokens/篇（MiniMax接近上限测试）
 - **200K context** = 63篇文档 × 3.2K tokens/篇（GLM 4.7接近上限测试）
 - **256K context** = 80篇文档 × 3.2K tokens/篇
@@ -250,11 +251,11 @@ bedrock_stress_test/
 | 模型名称 | 模型ID | 提供商 | 最大上下文 | 推荐测试梯度 |
 |---------|--------|-------|----------|------------|
 | deepseek-v3.1 | `deepseek.v3-v1:0` | DeepSeek | 128K tokens | 8K, 32K, 64K, 128K |
-| deepseek-v3.2 | `deepseek.v3.2` | DeepSeek | 164K tokens | 8K, 32K, 64K, 128K |
-| minimax2.0 | `minimax.minimax-m2` | MiniMax | **192K tokens** (196608) | 8K, 32K, 64K, 128K, **196K** |
-| minimax2.1 | `minimax.minimax-m2.1` | MiniMax | **192K tokens** (196608) | 8K, 32K, 64K, 128K, **196K** |
-| glm4.7 | `zai.glm-4.7` | 智谱AI | 203K tokens | 8K, 32K, 64K, 128K, **196K, 200K** |
-| kimi2.5 | `moonshotai.kimi-k2.5` | Moonshot | 256K tokens | 8K, 32K, 64K, 128K, **196K, 200K**, 256K |
+| deepseek-v3.2 | `deepseek.v3.2` | DeepSeek | 164K tokens | 8K, 32K, 64K, 128K, **164K** |
+| minimax2.0 | `minimax.minimax-m2` | MiniMax | **192K tokens** (196608) | 8K, 32K, 64K, 128K, **164K, 196K** |
+| minimax2.1 | `minimax.minimax-m2.1` | MiniMax | **192K tokens** (196608) | 8K, 32K, 64K, 128K, **164K, 196K** |
+| glm4.7 | `zai.glm-4.7` | 智谱AI | 203K tokens | 8K, 32K, 64K, 128K, **164K, 196K, 200K** |
+| kimi2.5 | `moonshotai.kimi-k2.5` | Moonshot | 256K tokens | 8K, 32K, 64K, 128K, **164K, 196K, 200K**, 256K |
 
 ### 如何添加新模型
 
