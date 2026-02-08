@@ -138,6 +138,12 @@ class ContextBuilder:
         # 128K context = 40篇文档 × 3K tokens/篇
         contexts["128K"] = ContextBuilder.build_rag_context(num_docs=40, tokens_per_doc=3200)
 
+        # 196K context = 61篇文档 × 3.2K tokens/篇（适用于MiniMax等模型接近上限测试）
+        contexts["196K"] = ContextBuilder.build_rag_context(num_docs=61, tokens_per_doc=3200)
+
+        # 200K context = 63篇文档 × 3.2K tokens/篇（适用于GLM 4.7等模型接近上限测试）
+        contexts["200K"] = ContextBuilder.build_rag_context(num_docs=63, tokens_per_doc=3200)
+
         # 256K context = 80篇文档 × 3K tokens/篇（适用于MiniMax M2等超长上下文模型）
         contexts["256K"] = ContextBuilder.build_rag_context(num_docs=80, tokens_per_doc=3200)
 
@@ -152,7 +158,7 @@ class ContextBuilder:
         获取特定大小的上下文
 
         Args:
-            size: 上下文大小 (8K, 32K, 64K, 128K, 256K, 360K)
+            size: 上下文大小 (8K, 32K, 64K, 128K, 196K, 200K, 256K, 360K)
 
         Returns:
             上下文字符串
@@ -162,6 +168,8 @@ class ContextBuilder:
             "32K": (10, 3200),
             "64K": (20, 3200),
             "128K": (40, 3200),
+            "196K": (61, 3200),
+            "200K": (63, 3200),
             "256K": (80, 3200),
             "360K": (112, 3200),
         }
